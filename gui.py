@@ -3,7 +3,7 @@ import mysql
 from facade import Facade
 import random
 
-from PyQt5.QtGui import QFont
+from PyQt5.QtGui import QFont, QIcon
 from PyQt5 import QtWidgets
 from PyQt5 import uic, QtCore, QtGui
 from PyQt5.QtCore import Qt
@@ -27,7 +27,8 @@ class MainWindow(QMainWindow):
         """
         super().__init__()
         self.facade = Facade()
-        self.ui = uic.loadUi("main.ui", self)
+        self.ui = uic.loadUi("forms/main.ui", self)
+        self.setWindowIcon(QIcon('img/icon.png'))
 
         self.page = self.ui.stackedWidget_main
         self.page_id = [0]  # индексы доступных страничек после авторизации для сотрудника
@@ -766,7 +767,8 @@ class DialogAuth(QDialog):
         Отвечает за подключением к кнопкам, объявление переменных, создание сцены для «graphicsView»
         """
         super(DialogAuth, self).__init__(parent)
-        self.ui = uic.loadUi("auth.ui", self)
+        self.ui = uic.loadUi("forms/auth.ui", self)
+        self.setWindowIcon(QIcon('img/icon.png'))
         self.facade = Facade()
 
         self.scene = QGraphicsScene(0, 0, 300, 80)
@@ -852,17 +854,29 @@ class DialogAuth(QDialog):
         auth_log = self.ui.edit_login.text()
         auth_pas = self.ui.edit_password.text()
 
+        password = "admin"
+        name = "admin"
+
         if auth_log == '' or auth_pas == '':
             logging.log(logging.INFO, 'Ошибка. Заполните все поля!')
             self.mes_box('Заполните все поля!')
 
+        elif password != auth_pas:  # неправильный пароль или вернул пустую строку тк нет такого логина
+            self.count_try_entry += 1
+            if self.count_try_entry == 2:
+                self.visible_captcha(True)
+                self.captcha_generation()
+                logging.log(logging.INFO, 'Ошибка. Вторая неуспешная попытка входа. Теперь введите капчу.')
+                self.mes_box('Вторая неуспешная попытка входа. Теперь введите капчу.')
+            else:
+                logging.log(logging.INFO, 'Ошибка. Неправильно введены данные.')
+                self.mes_box('Неправильно введены данные.')
+
         elif self.now_captcha is not None and self.ui.edit_captcha.text() == '':    # если капча существует и она не пустая
             logging.log(logging.INFO, 'Ошибка. Введите капчу!')
             self.mes_box('Введите капчу!')
-        else:
-            password = "admin"
-            name = "admin"
 
+        else:
             if self.now_captcha is not None and self.now_captcha != self.ui.edit_captcha.text():
                 logging.log(logging.INFO, 'Ошибка. Неправильно введена капча.')
                 self.mes_box('Неправильно введена капча.')
@@ -872,9 +886,9 @@ class DialogAuth(QDialog):
             elif password == auth_pas:
                 logging.log(logging.INFO, 'Вход выполнен')
 
-                if name == 'admin1':
-                    self.parent().page_id = [0, 1, 2, 3, 4, 5, 6]
-                else:   # Администратор
+                if name == 'storekeeper':
+                    self.parent().page_id = [0]
+                elif name == 'admin':
                     self.parent().page_id = [0, 1, 2, 3, 4, 5, 6]
                 self.parent().show()
                 self.close()
@@ -886,7 +900,8 @@ class DialogNewWorkwear(QDialog):
         Отвечает за подключение к кнопке "Добавить"
         """
         super(DialogNewWorkwear, self).__init__(parent)
-        self.ui = uic.loadUi("new_workwear.ui", self)
+        self.ui = uic.loadUi("forms/new_workwear.ui", self)
+        self.setWindowIcon(QIcon('img/icon.png'))
         self.facade = Facade()
 
         self.build_combobox_type()
@@ -951,7 +966,8 @@ class DialogNewEmployee(QDialog):
         Отвечает за подключение к кнопке "Добавить"
         """
         super(DialogNewEmployee, self).__init__(parent)
-        self.ui = uic.loadUi("new_employee.ui", self)
+        self.ui = uic.loadUi("forms/new_employee.ui", self)
+        self.setWindowIcon(QIcon('img/icon.png'))
         self.facade = Facade()
         self.ui.btn_add_employee.clicked.connect(self.add)
 
